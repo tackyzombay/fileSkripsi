@@ -1,0 +1,19 @@
+.about{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px;
+
+    border: 1px solid #c9c9c9;
+}
+.about h2{
+    margin: 15px 0px;
+}
+
+.about p{
+    margin: 5px 350px 50px 350px;
+}
+
+.about img{
+    width: 1100px;
+}
