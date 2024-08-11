@@ -10,6 +10,7 @@ import men_banner from "./Components/Assets/banner_mens.png";
 import kid_banner from "./Components/Assets/banner_kids.png";
 import LoginSignup from "./Pages/LoginSignup";
 import About from "./Components/About/About";
+import TransactionHistory from "./Components/TransactionHistory/TransactionHistory"
 
 export const backend_url = 'http://localhost:4000';
 export const currency = 'Rp. ';
@@ -29,6 +30,7 @@ function App() {
           </Route>
           <Route path="/cart" element={<Cart />} />
           <Route path="/login" element={<LoginSignup/>} />
+          <Route path="/transactionhistory" element={<TransactionHistory/>} />
         </Routes>
         <Footer />
       </Router>

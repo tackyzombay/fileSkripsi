@@ -28,6 +28,7 @@ const Navbar = () => {
         <li onClick={()=>{setMenu("shop")}}><Link to='/' style={{ textDecoration: 'none' }}>Home</Link>{menu==="shop"?<hr/>:<></>}</li>
         <li onClick={()=>{setMenu("mens")}}><Link to='/items' style={{ textDecoration: 'none' }}>Product</Link>{menu==="mens"?<hr/>:<></>}</li>
         <li onClick={()=>{setMenu("about")}}><Link to='/about' style={{ textDecoration: 'none' }}>About</Link>{menu==="about"?<hr/>:<></>}</li>
+        <li onClick={()=>{setMenu("transactionhistory")}}><Link to='/transactionhistory' style={{ textDecoration: 'none' }}>Transaction History</Link>{menu==="transactionhistory"?<hr/>:<></>}</li>
       </ul>
       <div className="nav-login-cart">
         {localStorage.getItem('auth-token')

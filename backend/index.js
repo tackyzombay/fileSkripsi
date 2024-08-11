@@ -75,8 +75,18 @@ const Product = mongoose.model("Product", {
   avilable: { type: Boolean, default: true },
 });
 
+// Schema for creating TransactionHistory
+const TransactionHistory = mongoose.model("TransactionHistory", {
+  transactionId: { type: Number, required: true },
+  userName: { type: String },
+  productList: { type: Array, default: [] },
+  totalPrice: { type: Number },
+  createAt: { type: Date, default: Date.now() },
+  updatedAt: { type: Date },
+  status: {type: String },
+});
 
-// ROOT API Route For Testing
+// ROOT API Route
 app.get("/", (req, res) => {
   res.send("Root");
 });
@@ -260,6 +270,35 @@ app.post("/checkout", fetchuser, async (req, res) => {
     cart[i] = 0;
   }
   await Users.findOneAndUpdate({ _id: req.user.id }, { cartData: cart });
+
+  let transaction = await TransactionHistory.find({});
+  let transactionid;
+  if (transaction.length > 0) {
+    let last_transaction_array = transaction.slice(-1);
+    let last_transaction = last_transaction_array[0];
+    transactionid = last_transaction.id + 1;
+  }
+  else { transactionid = 1; }
+  
+
+  let totalAmount = 0
+  req.body.forEach(async (product) => {
+    const stockQuantity2 = allProducts.find((singleProduct) => singleProduct.id === product.id).quantity;
+    const price2 = allProducts.find((singleProduct) => singleProduct.id === product.id).new_price;
+    totalAmount += stockQuantity2 * price2;
+  });
+  const transactionhistory = new TransactionHistory({
+    transactionId: transactionid,
+    userName: req.body.username,
+    totalPrice: totalAmount,
+    status: "Paid",
+  });
+  const productListArray = transactionhistory.productList;
+  productListArray.push({ name: req.body.name, category: req.body.category, quantity: req.body.quantity, new_price: req.body.new_price })
+  await transactionhistory.save();
+
+  console.log(totalAmount);
+
   res.json({ success: true })
 });
 
