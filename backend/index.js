@@ -79,7 +79,7 @@ const Product = mongoose.model("Product", {
 const TransactionHistory = mongoose.model("TransactionHistory", {
   transactionId: { type: Number, required: true },
   userName: { type: String },
-  productList: { type: Array, default: [] },
+  productList: [],
   totalPrice: { type: Number },
   createAt: { type: Date, default: Date.now() },
   updatedAt: { type: Date },
@@ -261,9 +261,13 @@ app.post("/removeproduct", async (req, res) => {
 // checkout
 app.post("/checkout", fetchuser, async (req, res) => {
   const allProducts = await Product.find({})
+  var productEdited = [];
   req.body.forEach(async (product) => {
-    const stockQuantity = allProducts.find((singleProduct) => singleProduct.id === product.id).quantity;
+    const productFind = allProducts.find((singleProduct) => singleProduct.id === product.id);
+    const stockQuantity = productFind.quantity;
     await Product.findOneAndUpdate({ id: product.id }, { quantity: stockQuantity - product.quantity });
+    productEdited.quantity = product.quantity;
+    productEdited.push(productFind);
   });
   let cart = {};
   for (let i = 0; i < 300; i++) {
@@ -276,28 +280,29 @@ app.post("/checkout", fetchuser, async (req, res) => {
   if (transaction.length > 0) {
     let last_transaction_array = transaction.slice(-1);
     let last_transaction = last_transaction_array[0];
-    transactionid = last_transaction.id + 1;
+    transactionid = last_transaction.transactionId + 1;
   }
   else { transactionid = 1; }
   
 
   let totalAmount = 0
   req.body.forEach(async (product) => {
-    const stockQuantity2 = allProducts.find((singleProduct) => singleProduct.id === product.id).quantity;
+    const stockQuantity2 = product.quantity;
     const price2 = allProducts.find((singleProduct) => singleProduct.id === product.id).new_price;
     totalAmount += stockQuantity2 * price2;
   });
   const transactionhistory = new TransactionHistory({
     transactionId: transactionid,
-    userName: req.body.username,
+    userName: req.user.id,
+    productList: productEdited,
     totalPrice: totalAmount,
     status: "Paid",
   });
   const productListArray = transactionhistory.productList;
-  productListArray.push({ name: req.body.name, category: req.body.category, quantity: req.body.quantity, new_price: req.body.new_price })
+  // productListArray.push()
   await transactionhistory.save();
 
-  console.log(totalAmount);
+  console.log(req.user.id);
 
   res.json({ success: true })
 });
@@ -311,6 +316,14 @@ app.post("/review", fetchuser, async (req, res) => {
   await Product.findOneAndUpdate({ id: req.body.productId }, { review: updatedProductReviews });
   res.json({ success: true })
 });
+
+//show transaction history
+app.get("/showTransactionHistory", fetchuser, async (req, res) => {
+  let transhistory = await TransactionHistory.find({"userName" : req.user.id}).then((transaction) => res.send(transaction));
+  console.log("Transaction History");
+  res.send(transhistory);
+});
+
 
 // Starting Express Server
 app.listen(port, (error) => {
