@@ -1,12 +1,15 @@
 const express = require("express");
 const app = express();
 const mongoose = require("mongoose");
+const {Users} = require("./models/user");
+const {Product} = require("./models/Product.js")
+const {TransactionHistory} = require("./models/TransactionHistory.js")
+const {TransactionHistoryController} = require("./controllers/TransactionHistoryController.js");
 const jwt = require("jsonwebtoken");
 const multer = require("multer");
 const path = require("path");
 const cors = require("cors");
 const port = process.env.PORT || 4000;
-
 app.use(express.json());
 app.use(cors());
 
@@ -37,54 +40,53 @@ app.use('/images', express.static('upload/images'));
 // MiddleWare to fetch user from token
 const fetchuser = async (req, res, next) => {
   const token = req.header("auth-token");
-  if (!token) {
-    res.status(401).send({ errors: "Please authenticate using a valid token" });
-  }
+  
   try {
     const data = jwt.verify(token, "secret_ecom");
     req.user = data.user;
     next();
   } catch (error) {
     res.status(401).send({ errors: "Please authenticate using a valid token" });
+    console.log("error");
   }
 };
 
 
 // Schema for creating user model
-const Users = mongoose.model("Users", {
-  name: { type: String },
-  email: { type: String, unique: true },
-  password: { type: String },
-  cartData: { type: Object },
-  date: { type: Date, default: Date.now() },
-});
+// const Users = mongoose.model("Users", {
+//   name: { type: String },
+//   email: { type: String, unique: true },
+//   password: { type: String },
+//   cartData: { type: Object },
+//   date: { type: Date, default: Date.now() },
+// });
 
 
 // Schema for creating Product
-const Product = mongoose.model("Product", {
-  id: { type: Number, required: true },
-  name: { type: String, required: true },
-  description: { type: String, required: true },
-  image: { type: String, required: true },
-  category: { type: String, required: true },
-  new_price: { type: Number },
-  old_price: { type: Number },
-  quantity: { type: Number },
-  review: { type: Array, default: [] },
-  date: { type: Date, default: Date.now },
-  avilable: { type: Boolean, default: true },
-});
+// const Product = mongoose.model("Product", {
+//   id: { type: Number, required: true },
+//   name: { type: String, required: true },
+//   description: { type: String, required: true },
+//   image: { type: String, required: true },
+//   category: { type: String, required: true },
+//   new_price: { type: Number },
+//   old_price: { type: Number },
+//   quantity: { type: Number },
+//   review: { type: Array, default: [] },
+//   date: { type: Date, default: Date.now },
+//   avilable: { type: Boolean, default: true },
+// });
 
 // Schema for creating TransactionHistory
-const TransactionHistory = mongoose.model("TransactionHistory", {
-  transactionId: { type: Number, required: true },
-  userName: { type: String },
-  productList: [],
-  totalPrice: { type: Number },
-  createAt: { type: Date, default: Date.now() },
-  updatedAt: { type: Date },
-  status: {type: String },
-});
+// const TransactionHistory = mongoose.model("TransactionHistory", {
+//   transactionId: { type: Number, required: true },
+//   userName: { type: String },
+//   productList: [],
+//   totalPrice: { type: Number },
+//   createAt: { type: Date, default: Date.now() },
+//   updatedAt: { type: Date },
+//   status: {type: String },
+// });
 
 // ROOT API Route
 app.get("/", (req, res) => {
@@ -317,12 +319,14 @@ app.post("/review", fetchuser, async (req, res) => {
   res.json({ success: true })
 });
 
+app.get("/transcation",()=>{},getTransactionHistory)
+app.post("/transaction",()=>{},createTransactionHistory)
+
+function getTransactionHistory(req,res){}
+function createTransactionHistory(req,res){}
+
 //show transaction history
-app.get("/showTransactionHistory", fetchuser, async (req, res) => {
-  let transhistory = await TransactionHistory.find({"userName" : req.user.id}).then((transaction) => res.send(transaction));
-  console.log("Transaction History");
-  res.send(transhistory);
-});
+app.get("/showTransactionHistory", fetchuser, TransactionHistoryController.getTransactionHistory);
 
 
 // Starting Express Server

@@ -3,7 +3,7 @@ import './TransactionHistory.css'
 import { backend_url } from "../../App";
 
 const TransactionHistory = (props) => {
-    const [transactionHistory, settransactionHistory] = useState("");
+    const [transactionHistory, settransactionHistory] = useState([]);
     const userLoggedIn = !!localStorage.getItem("auth-token");
     const showTransactionHistory = async () => {
         await fetch(`${backend_url}/showTransactionHistory`, {
@@ -12,28 +12,53 @@ const TransactionHistory = (props) => {
             'Content-Type': 'application/json',
             'auth-token': `${localStorage.getItem("auth-token")}`,
           },
-        }).then((resp) => {
-            const json = resp.json()
+        }).then(async(resp) => {
+           
+            const json = await resp.json()
+            settransactionHistory(json)
             console.log(json)
-            return json;
         })
       }
 
       useEffect(()=>{
         showTransactionHistory()
+        
       },[])
 
       return (
         <div className="transhistory">
           
+          {
+            transactionHistory.map((transHistory) =>{
+              const productListElement = transHistory.productList.map((prodList) =>{
+                return(
+                  <>
+                    <h4>{prodList.name}</h4>
+                    <h4>{prodList.new_price}</h4>
+                  </>
+                )
+              })
+              return(
+                <>
+                <h4>{transHistory.totalPrice}</h4>
+                {productListElement}
+                </>
+              )
+              
+              
+            } )
+
+          }
+
+          {/* <h4>{JSON.stringify(transactionHistory)}</h4> */}
         <div className="transhistory-box">
         {
-          props.productList.map((history) => (
-            <div className='transhistory-text'>
-              <h4>{history.username}</h4>
-              <p>{history.review}</p>
-            </div>
-          ))
+          // props.productList.map((history) => (
+          //   <div className='transhistory-text'>
+          //     <h4>{transactionHistory.username}</h4>
+          //     <p>{transactionHistory.review}</p>
+          //   </div>
+          // ))
         }
         </div>
         {/* 
